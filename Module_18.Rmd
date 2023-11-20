@@ -1,0 +1,118 @@
+---
+title: "Module 18"
+author: "Erin Anderson"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+library(curl)
+f <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall21/chimpgrooming.csv")
+d <- read.csv(f, header = TRUE, sep = ",")
+head(d)
+summary(d)
+```
+
+```{r 1, include=TRUE}
+# first, some exploratory visualization let's plot grooming received
+# duration in relation to subject ID
+par(mfrow = c(1, 1))
+boxplot(data = d, duration ~ subject, col = c("lightpink1"))
+```
+
+```{r 2, include=TRUE}
+# we see lots of individual variation let's plot grooming received
+# duration in relation to reproductive condition
+boxplot(data = d, duration ~ reprocondition, col = c("burlywood2", "lightpink1"))
+```
+
+```{r 3, include=TRUE}
+# let's plot grooming received duration in relation to reproductive
+# condition and parity
+boxplot(data = d, duration ~ reprocondition * parity, col = c("burlywood2",
+    "lightpink1"))
+```
+
+```{r 4, include=TRUE}
+boxplot(data = d, duration ~ reprocondition * subject, col = c("burlywood2",
+    "lightpink1"))
+```
+
+```{r 5, include=TRUE}
+library(lme4)
+lme <- lmer(data = d, duration ~ reprocondition + parity + (1 | subject))
+summary(lme)
+```
+
+``` {r 6, include = TRUE}
+coefficients(lme)
+full <- lmer(data = d, duration ~ reprocondition + parity + (1 | subject), REML = FALSE)
+summary(full)
+```
+
+``` {r 7, include = TRUE}
+reduced <- lmer(data = d, duration ~ parity + (1 | subject), REML = FALSE)
+summary(reduced)
+anova(reduced, full, test = "Chisq")
+```
+
+``` {r 8, include = TRUE}
+full <- lmer(data = d, duration ~ reprocondition + parity + (1 | subject), REML = FALSE)
+reduced <- lmer(data = d, duration ~ reprocondition + (1 | subject), REML = FALSE)
+anova(reduced, full, test = "Chisq")
+```
+
+``` {r 9, include = TRUE}
+full <- lmer(data = d, duration ~ reprocondition * parity + (1 | subject), REML = FALSE)
+reduced <- lmer(data = d, duration ~ reprocondition + parity + (1 | subject),
+    REML = FALSE)
+anova(reduced, full, test = "Chisq")
+```
+
+``` {r 10, include = TRUE}
+lme <- lmer(data = d, duration ~ reprocondition + parity + (1 + reprocondition |
+    subject) + (1 + parity | subject), REML = FALSE)
+summary(lme)
+
+```
+
+```{r 11, include=TRUE}
+coefficients(lme)
+# reproductive condition
+full <- lmer(data = d, duration ~ reprocondition + parity + (1 + reprocondition |
+    subject) + (1 + parity | subject), REML = FALSE)
+reduced <- lmer(data = d, duration ~ parity + (1 + reprocondition | subject) +
+    (1 + parity | subject), REML = FALSE)
+anova(reduced, full, test = "Chisq")
+```
+
+```{r 12, include=TRUE}
+# parity
+full <- lmer(data = d, duration ~ reprocondition + parity + (1 + reprocondition |
+    subject) + (1 + parity | subject), REML = FALSE)
+```
+
+```{r 13, include=TRUE}
+null <- lmer(data = d, duration ~ reprocondition + (1 + reprocondition | subject) +
+    (1 + parity | subject), REML = FALSE)
+```
+
+```{r 14, include=TRUE}
+anova(reduced, full, test = "Chisq")
+
+```
+
+```{r 15, include=TRUE}
+library(AICcmodavg)
+print(aictab(list(full, reduced, null), c("full", "reduced", "null")), LL = FALSE)
+```
+
+```{r 16, include=TRUE}
+library(MuMIn)
+r.squaredGLMM(full)
+```
+
+```{r 17, include=TRUE}
+r.squaredGLMM(reduced)
+r.squaredGLMM(null)
+```
