@@ -112,7 +112,7 @@ library(MuMIn)
 r.squaredGLMM(full)
 ```
 
-```{r 17, include=TRUE}
+``` {r 17, include = TRUE}
 r.squaredGLMM(reduced)
 r.squaredGLMM(null)
 ```
